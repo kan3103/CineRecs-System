@@ -1,0 +1,224 @@
+import {
+  Bell,
+  Calendar,
+  Film,
+  Heart,
+  LogOut,
+  MessageCircle,
+  Search,
+  Settings,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import React from "react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+const FavouritesScreen = () => {
+  // Navigation menu items data
+  const navItems = [
+    {
+      icon: <Film className="w-6 h-6" />,
+      label: "Home",
+      path: "#",
+      active: false,
+    },
+    {
+      icon: <Heart className="w-6 h-6" />,
+      label: "Favourites",
+      path: "#",
+      active: true,
+    },
+    {
+      icon: <TrendingUp className="w-6 h-6" />,
+      label: "Trending",
+      path: "#",
+      active: false,
+    },
+    {
+      icon: <Calendar className="w-6 h-6" />,
+      label: "Coming soon",
+      path: "#",
+      active: false,
+    },
+    {
+      icon: <Users className="w-6 h-6" />,
+      label: "Community",
+      path: "#",
+      active: false,
+    },
+    {
+      icon: <MessageCircle className="w-6 h-6" />,
+      label: "Social",
+      path: "#",
+      active: false,
+    },
+  ];
+
+  // Footer menu items
+  const footerItems = [
+    { icon: <Settings className="w-6 h-6" />, label: "Settings", path: "#" },
+    { icon: <LogOut className="w-6 h-6" />, label: "Logout", path: "#" },
+  ];
+
+  // Movie data
+  const movies = [
+    {
+      id: 1,
+      title: "Moonfall",
+      year: "2022",
+      genre: "Action",
+      image: "/rectangle-215-2.png", // Using placeholder path
+      isFavorite: true,
+    },
+    {
+      id: 2,
+      title: "Black Adam",
+      year: "2022",
+      genre: "Action",
+      image: "/rectangle-227-2.png", // Using placeholder path
+      isFavorite: true,
+    },
+  ];
+
+  return (
+    <div className="bg-white flex flex-row justify-center w-full">
+      <div className="bg-white overflow-hidden [background:conic-gradient(from_357deg_at_82%_63%,rgba(55,49,42,1)_49%,rgba(25,24,23,1)_95%,rgba(25,24,23,1)_100%)] w-[1440px] h-[1024px] relative">
+        {/* Sidebar */}
+        <aside className="fixed top-0 left-0 w-[274px] h-full bg-[#21201e] shadow-[2px_0px_90px_#6100c266] z-10">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 p-10 pb-16">
+            <img
+              src=""
+              alt="Watch Logo"
+              className="w-[35px] h-[31px] object-cover"
+            />
+            <span className="font-bold text-white text-[22px] tracking-[1.32px] leading-6">
+              WATCH
+            </span>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="px-10">
+            <ul className="space-y-[18px]">
+              {navItems.map((item, index) => (
+                <li key={index}>
+                  <a href={item.path} className="flex items-center gap-3">
+                    {item.icon}
+                    <span
+                      className={`${
+                        item.active
+                          ? "font-bold text-white"
+                          : "opacity-80 font-normal text-white"
+                      } text-base leading-6`}
+                    >
+                      {item.label}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Footer Menu */}
+          <div className="absolute bottom-8 left-10">
+            <ul className="space-y-[12px]">
+              {footerItems.map((item, index) => (
+                <li key={index}>
+                  <a href={item.path} className="flex items-center gap-3">
+                    <div className="w-7 flex justify-start">{item.icon}</div>
+                    <span className="opacity-80 font-normal text-white text-base leading-6">
+                      {item.label}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="ml-[274px] p-10 pt-[47px]">
+          {/* Top Navigation */}
+          <div className="flex justify-between items-center">
+            <div className="flex gap-[89px]">
+              <span className="font-medium text-white text-base leading-[18px]">
+                Movies
+              </span>
+              <span className="font-medium text-white text-base leading-[18px]">
+                Series
+              </span>
+              <span className="font-medium text-white text-base leading-[18px]">
+                Documentaries
+              </span>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <Button variant="ghost" size="icon" className="text-white">
+                <Search className="w-6 h-6" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-white">
+                <Bell className="w-6 h-6" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src="" alt="User" />
+                  <AvatarFallback className="bg-gray-500">IM</AvatarFallback>
+                </Avatar>
+                <span className="font-medium text-white text-base leading-[18px]">
+                  Imanol
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Favourites Section */}
+          <div className="mt-[82px]">
+            <h2 className="font-semibold text-white text-xl mb-[35px]">
+              Favourites
+            </h2>
+
+            <div className="flex gap-8">
+              {movies.map((movie) => (
+                <Card
+                  key={movie.id}
+                  className="w-[348px] h-[259px] rounded-[20px] overflow-hidden p-0 bg-transparent"
+                >
+                  <div
+                    className="relative w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: `url(${movie.image})` }}
+                  >
+                    {/* Favorite Button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-[19px] right-[15px] p-[8.89px] rounded-[8.3px] backdrop-blur-[5.93px] bg-gradient-to-r from-white to-transparent"
+                    >
+                      <Heart className="w-[14.22px] h-[14.22px] text-purple-600 fill-purple-600" />
+                    </Button>
+
+                    {/* Movie Info */}
+                    <div className="absolute bottom-0 left-0 w-full h-[86px] backdrop-blur-[10px] rounded-b-[20px]">
+                      <CardContent className="p-5 pt-4">
+                        <h3 className="font-semibold text-black text-base leading-6">
+                          {movie.title}
+                        </h3>
+                        <p className="font-normal text-black text-sm leading-4 mt-2">
+                          {movie.year} | {movie.genre}
+                        </p>
+                      </CardContent>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default FavouritesScreen;
