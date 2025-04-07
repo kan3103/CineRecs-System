@@ -29,7 +29,8 @@ Our dataset includes:
 - **Backend**: FastAPI (Python)
 - **Frontend**: ReactJS (JavaScript)
 - **AI Algorithm**: Scikit-learn, TensorFlow/PyTorch
-- **Database**: PostgreSQL, Apache Airflow (Data Pipelines)
+- **Database**: PostgreSQL (Data Warehouse), Apache Airflow (ETL), Apache Spark (Data Processing)
+- **Data Visualization**: Matplotlib, Seaborn, Power BI
 
 ## How It Works
 1. **Data Processing**: Cleaning and preprocessing user and movie data.
