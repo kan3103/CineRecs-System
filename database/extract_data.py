@@ -433,7 +433,7 @@ def main():
     final_df = pd.merge(movies_df, links_unique[['movieId', 'tmdbId']], on='movieId', how='inner')
 
     # Lưu file kết quả (nếu cần)
-    final_df.to_csv('movies_with_tmdb_test.csv', index=False)
+    final_df.to_csv('movies_with_tmdb.csv', index=False)
 
     # In ra số lượng dòng sau khi xử lý
     print("Final merged dataset row count:", len(final_df))
