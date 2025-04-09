@@ -284,6 +284,8 @@ def fix_incomplete_movie_details(movie_details_df,
     """
     Rà soát TẤT CẢ cột (trừ movieId, tmdbId) của movie_details_df. 
     Nếu thiếu (NaN) ở cột nào, ta fetch lại API TMDB cho phim đó để cập nhật.
+    
+    TRẢ VỀ movie_details_df đã cập nhật
     """
 
     # 1) Xác định các cột cần check = tất cả cột trừ movieId, tmdbId
@@ -298,12 +300,11 @@ def fix_incomplete_movie_details(movie_details_df,
 
     if incomplete_df.empty:
         print("No incomplete movies found. Skipping fix_incomplete_movie_details.")
-        return movie_details_df
+        return movie_details_df  # Không thay đổi gì, trả về DF gốc
 
     print(f"Found {len(incomplete_df)} incomplete movies. Attempting to refetch...")
 
     # 3) Đảm bảo có cột 'title' để parse (nếu parse_movie_details cần)
-    #    Hợp nhất (merge) với original_movies_df để lấy 'title' gốc (nếu movie_details_df mất)
     needed_cols = ["movieId", "tmdbId", "title"]
     merged_incomplete = pd.merge(
         incomplete_df[["movieId","tmdbId"]],
@@ -319,9 +320,7 @@ def fix_incomplete_movie_details(movie_details_df,
             return None
 
         new_data = {
-            # Chúng ta parse lại y như parse_movie_details => 
-            #   Lấy những cột trong columns_to_check. 
-            "title": row["title"],  # Giữ title cũ
+            "title": row["title"],
             "budget": details.get("budget"),
             "original_language": details.get("original_language"),
             "original_title": details.get("original_title"),
@@ -332,7 +331,6 @@ def fix_incomplete_movie_details(movie_details_df,
             "runtime": details.get("runtime"),
             "status": details.get("status")
         }
-
         return (row["movieId"], new_data)
 
     # 5) Chạy đa luồng cho subset
@@ -364,8 +362,7 @@ def fix_incomplete_movie_details(movie_details_df,
             updated_count += 1
 
     print(f"Refetched & updated data for {updated_count} incomplete movies.")
-    return 
-
+    return movie_details_df  # TRẢ VỀ DF ĐÃ UPDATE
 
 ###############################################################################
 # Hàm fix_csv: đọc file CSV, ghép những dòng bị tách, sau đó ghi đè với đúng format
@@ -390,16 +387,15 @@ def fix_csv(input_file, output_file):
         # Kiểm tra xem line có phải bắt đầu record mới hay header
         # Dùng regex: "^(movieId,)" hoặc "^\d+,"
         if re.match(r"^(movieId,)|(^\d+,)", line):
-            # Nếu đang có record, push nó vào fixed_lines trước khi bắt đầu record mới
+            # Nếu đang có record, push nó vào fixed_lines
             if current_line is not None:
                 fixed_lines.append(current_line)
             current_line = line
         else:
             # Dòng đang nối tiếp record cũ
             if current_line is None:
-                current_line = line  # trường hợp file không có header
+                current_line = line
             else:
-                # ghép vào record hiện tại (kèm 1 dấu space hoặc ký tự phân tách)
                 current_line += " " + line
 
     # push record cuối
@@ -412,7 +408,6 @@ def fix_csv(input_file, output_file):
 
     print(f"Đã fix xong format file CSV: {output_file}")
 
-
 ###############################################################################
 # 6) main()
 ###############################################################################
@@ -423,7 +418,11 @@ def main():
 
     # Xử lý: loại bỏ các dòng thiếu tmdbId và giữ lại lần xuất hiện đầu tiên của tmdbId (loại bỏ trùng lặp)
     links_clean = links_df.dropna(subset=['tmdbId'])
+    # Thông báo này (SettingWithCopyWarning) thường xuất hiện do pandas
+    # ta có thể dùng .loc[:] hoặc copy() tường minh. Nhưng về logic, nó vẫn chạy được.
+    links_clean = links_clean.copy()
     links_clean['tmdbId'] = links_clean['tmdbId'].astype(int)
+
     links_unique = links_clean.drop_duplicates(subset=['tmdbId'], keep='first')
 
     # Đọc file movies.csv
@@ -499,6 +498,7 @@ def main():
         credited_movie_ids = set([m["movieId"] for m in movie_credits_list])
         print(f"\n== DONE fetching credits => {len(credited_movie_ids)} movies have credits")
     else:
+        # Nếu không có phim nào có details => credits = rỗng
         people_set = set()
         movie_credits_list = []
 
@@ -541,14 +541,13 @@ def main():
     # E) Fix format cho movie_details.csv
     fix_csv("movie_details.csv", "movie_details_fixed.csv")
 
-    # Dùng os.rename để ghi đè lại movie_details.csv cũ
+    # Đổi tên file fix -> file cũ
+    os.remove("movie_details.csv")
+    os.rename("movie_details_fixed.csv", "movie_details.csv")
 
-    os.remove("movie_details.csv")  # xoá file cũ
-    os.rename("movie_details_fixed.csv", "movie_details.csv")  # đổi tên file fix -> cũ
-
-    # In kết quả
+    # Kiểm tra
     df_check = pd.read_csv("movie_details.csv")
-    
+
     genres_df.to_csv("genres.csv", index=False)
     movie_genres_df.to_csv("movie_genres.csv", index=False)
     prod_companies_df.to_csv("production_companies.csv", index=False)
@@ -561,7 +560,6 @@ def main():
     print(f"Genres: {len(genres_df)} - Movie-Genres: {len(movie_genres_df)}")
     print(f"Production companies: {len(prod_companies_df)} - Movie-Companies: {len(movie_companies_df)}")
     print(f"People: {len(people_df)}, Movie credits: {len(movie_credits_df)}")
-
 
 if __name__ == "__main__":
     main()
