@@ -1,8 +1,8 @@
 
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
-
+from fastapi import HTTPException
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class MovieCreate(BaseModel):
@@ -10,28 +10,29 @@ class MovieCreate(BaseModel):
   rated: str
   total_rating: Optional[float]
   rating_total_count: Optional[int]
-  runtime: str
+  runtime: int
   release_date: date
   budget: Optional[float]
-  revenue: Optional[str]
+  revenue: Optional[int]
   description: Optional[str]
-  status: bool
+  status: Optional[str]
   poster: Optional[str]
   country: str
   language: str
-  genres: list[int] = []
+  genre_ids: list[int] = []
+  
 
 class MovieUpdate(BaseModel):
   name: Optional[str]
   rated: Optional[str]
   total_rating: Optional[float]
   rating_total_count: Optional[int]
-  runtime: Optional[str]
+  runtime: Optional[int]
   release_date: Optional[date]
   budget: Optional[float]
-  revenue: Optional[str]
+  revenue: Optional[int]
   description: Optional[str]
-  status: Optional[bool]
+  status: Optional[str]
   poster: Optional[str]
   country: Optional[str]
   language: Optional[str]
@@ -42,15 +43,16 @@ class MovieResponse(BaseModel):
   rated: str
   total_rating: Optional[float]
   rating_total_count: Optional[int]
-  runtime: str
+  runtime: int
   release_date: date
   budget: Optional[float]
-  revenue: Optional[str]
+  revenue: Optional[int]
   description: Optional[str]
-  status: bool
+  status: str
   poster: Optional[str]
   country: str
   language: str
-  genres: list[str] = []
+  genre_names: list[str] = []
   
   model_config = ConfigDict(from_attributes=True)
+  

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend.service.genre import GenreService, get_genre_service
+from service.genre import GenreService, get_genre_service
 from service.dto.genre import GenreCreate, GenreResponse, GenreUpdate
 
 
@@ -27,7 +27,7 @@ async def get_genre(id: int, genre_service: GenreService = Depends(get_genre_ser
 @router.put('/{id}', response_model=GenreResponse, status_code=200)
 async def update_genre(id: int, dto: GenreUpdate, genre_service: GenreService = Depends(get_genre_service)) -> GenreResponse:
   try:
-    genre = genre_service.update_genre(id, dto)
+    genre = await genre_service.update_genre(id, dto)
     return GenreResponse.model_validate(genre)
   except HTTPException as e:
     raise e

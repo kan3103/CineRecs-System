@@ -1,5 +1,7 @@
 
+import asyncio
 from fastapi import HTTPException
+from model.genre import Genre
 from config.db import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -21,6 +23,16 @@ class MovieService:
   
   async def create_movie(self, dto: MovieCreate) -> Movie:
     movie = Movie(**dto.model_dump())
+    
+    async def get_genre(id: int) -> Genre:
+      genre = (await self.db.execute(select(Genre).where(Genre.id == id))).scalars().first() # type: ignore
+      if not genre:
+        raise HTTPException(status_code=404, detail="Genre is not found")
+      return genre
+    genres: list[Genre] = await asyncio.gather(*list(map(get_genre, dto.genre_ids)))
+    
+    movie.genres.extend(genres) # type: ignore
+    
     self.db.add(movie)
     try:
       await self.db.commit()
