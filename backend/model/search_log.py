@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class SearchLog(SQLModel, table=True):
   
-  __tablename__ = 'dim_search_log'
+  __tablename__ = 'dim_search_log' # type: ignore
   
   id: int = Field(default=None, primary_key=True)
   user_id: int = Field(nullable=False, foreign_key="dim_user.id")

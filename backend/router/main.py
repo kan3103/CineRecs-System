@@ -1,10 +1,9 @@
 from fastapi import APIRouter
 
-from router.controller import movie
-# from app.core.config import settings
-
+from router.controller import user, movie
 
 api_router = APIRouter()
-api_router.include_router(movie.router, prefix="/movies")
+api_router.include_router(user.router)
+api_router.include_router(movie.router)
 
 

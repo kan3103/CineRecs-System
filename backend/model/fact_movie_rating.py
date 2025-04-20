@@ -9,11 +9,12 @@ if TYPE_CHECKING:
 
 class FactMovieRating(SQLModel, table=True):
   
-  __tablename__ = 'fact_movie_rating'
+  __tablename__ = 'fact_movie_rating' # type: ignore
+  
   id: int = Field(primary_key=True, default=None)
   user_id: int = Field(nullable=False, foreign_key="dim_user.id")
   movie_id: int = Field(nullable=False, foreign_key="dim_movie.id")
   rating: float = Field(nullable=False, ge=0.0, le=10.0)
   
   user: "User" = Relationship(back_populates='ratings')
-  movie: "Movie" = Relationship(back_populates='movie')
+  movie: "Movie" = Relationship(back_populates='ratings')

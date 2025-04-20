@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class Person(SQLModel, table=True):
   
-  __tablename__ = 'dim_person'
+  __tablename__ = 'dim_person' # type: ignore
   
   id: int = Field(nullable=False, primary_key=True)
   name: str = Field(nullable=False, min_length=1, max_length=255)

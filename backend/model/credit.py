@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class Credit(SQLModel, table=True):
   
-  __tablename__ = 'dim_credits'
+  __tablename__ = 'dim_credits' # type: ignore
   
   id: int = Field(primary_key=True, default=None)
   movie_id: int = Field(nullable=False, foreign_key="dim_movie.id")
@@ -18,3 +18,4 @@ class Credit(SQLModel, table=True):
   
   person: "Person" = Relationship(back_populates='credits')
   movie: "Movie" = Relationship(back_populates='credits')
+  
