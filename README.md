@@ -46,7 +46,7 @@ Our dataset includes:
 git clone https://github.com/kan3103/CineRecs-System.git
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+python main.py # Port 5623
 ```
 
 ### Frontend Setup

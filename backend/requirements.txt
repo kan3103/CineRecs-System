@@ -1,0 +1,5 @@
+fastapi[standard]
+sqlmodel
+pydantic_settings
+asyncpg
+bcrypt
