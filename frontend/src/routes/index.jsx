@@ -1,24 +1,25 @@
 import Login from "../pages/LoginPage/Login.jsx"
 import HomePage from "../pages/Home/HomePage.jsx"
+import Trending from "../pages/TrendPage/Trending.jsx"
 
 
 const routes = [
     {
-        path: '/login',
+        path: '/home',
         component: HomePage,
         protected: false,
     },
     {
-        path: '/home',
-        // component: Home,
-        protected: true,
-        allowedRoles: ['admin'],
+        path: '/trending',
+        component: Trending,
+        // protected: true,
+        // allowedRoles: ['admin'],
     },
     {
         path: '/home-staff',
         // component: HomeStaff,
-        protected: true,
-        allowedRoles: ['staff'],
+        // protected: true,
+        // allowedRoles: ['staff'],
     },
     {
         path: '/',

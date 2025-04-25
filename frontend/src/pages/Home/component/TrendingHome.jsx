@@ -1,5 +1,4 @@
 import React from "react";
-import test from "../../../assets/images/Home/test.png";
 import test1 from "../../../assets/images/Home/test1.png";
 import test2 from "../../../assets/images/Home/test2.png";
 import test3 from "../../../assets/images/Home/test3.png";

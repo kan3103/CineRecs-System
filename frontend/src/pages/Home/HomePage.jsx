@@ -30,19 +30,20 @@ export const HomePage = () => {
 
                     <nav className="flex flex-col gap-10">
                         {[
-                            { text: "Home", icon: film },
+                            { text: "Home", icon: film, path: "/home" },
                             { text: "Favourites", icon: heart },
-                            { text: "Trending", icon: trend },
+                            { text: "Trending", icon: trend, path: "/trending" },
                             { text: "Settings", icon: settings },
                             { text: "Log out", icon: logout },
                         ].map((item, index) => (
-                            <button
+                            <a
                                 key={index}
+                                href={item.path}
                                 className="flex items-center gap-3 text-base text-white font-normal hover:font-bold transition-all duration-200"
                             >
                                 <img className="w-6 h-6" alt={`${item.text} icon`} src={item.icon} />
                                 {item.text}
-                            </button>
+                            </a>
                         ))}
                     </nav>
                 </div>

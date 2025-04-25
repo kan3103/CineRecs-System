@@ -5,11 +5,8 @@ import heart from "../../assets/images/Home/heart.png";
 import film from "../../assets/images/Home/film.png";
 import settings from "../../assets/images/Home/setting.png";
 import logout from "../../assets/images/Home/logout.png";
-import test from "../../assets/images/Home/test.png";
-import test1 from "../../assets/images/Home/test1.png";
-import Favourite from "../../components/Favourite";
-import Like from "../../components/Like";
-import MovieCard from "../../components/MovieCard";
+
+import ListTrendingFilm from "../TrendPage/components/ListFilm";
 
 export const Trending = () => {
     return (
@@ -28,19 +25,20 @@ export const Trending = () => {
 
                     <nav className="flex flex-col gap-10">
                         {[
-                            { text: "Home", icon: film },
+                            { text: "Home", icon: film, path: "/home" },
                             { text: "Favourites", icon: heart },
-                            { text: "Trending", icon: trend },
+                            { text: "Trending", icon: trend, path: "/trending" },
                             { text: "Settings", icon: settings },
                             { text: "Log out", icon: logout },
                         ].map((item, index) => (
-                            <button
+                            <a
                                 key={index}
+                                href={item.path}
                                 className="flex items-center gap-3 text-base text-white font-normal hover:font-bold transition-all duration-200"
                             >
                                 <img className="w-6 h-6" alt={`${item.text} icon`} src={item.icon} />
                                 {item.text}
-                            </button>
+                            </a>
                         ))}
                     </nav>
                 </div>
@@ -54,32 +52,11 @@ export const Trending = () => {
                             <div>Series</div>
                             <div>Documentaries</div>
                         </div>
-
-                        <div
-                            className="flex flex-col justify-center gap-4 bg-cover bg-center h-[455px] px-10"
-                            style={{ backgroundImage: `url(${test})` }}
-                        >
-
-                            <div className="[font-family: 'Poppins-SemiBold',Helvetica] text-[32px] text-white leading-[48px] font-semibold whitespace-nowrap tracking-[0]">
-                                Harry Potter
-                            </div>
-                            <div className="text-white leading-5 font-normal text-sm whitespace-nowrap tracking-[0]">
-                                2004 | Mystery | 3 Seasons
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button className="px-6 py-[17px] bg-[#6100c2] rounded-[14px] [font-family:'Poppins-Medium',Helvetica] text-base text-white font-medium tracking-[0.25px]">
-                                    Watch now
-                                </button>
-                                <div className="p-[15px] rounded-[14px] backdrop-brightness-[100%] [webkit-backdrop-filter:blur(10px)_brightness(100%)]">
-                                    <Favourite />
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Trending Section */}
                     <div className="grid grid-rows-[auto_1fr] gap-4">
-                        <TrendingCard/>
+                        <ListTrendingFilm/>
                     </div>
                 </div>
             </div>
