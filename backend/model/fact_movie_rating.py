@@ -1,4 +1,5 @@
 
+from datetime import date
 from sqlmodel import Field, Relationship, SQLModel
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,8 @@ class FactMovieRating(SQLModel, table=True):
   user_id: int = Field(nullable=False, foreign_key="dim_user.id")
   movie_id: int = Field(nullable=False, foreign_key="dim_movie.id")
   rating: float = Field(nullable=False, ge=0.0, le=10.0)
+  timestamp: int = Field(nullable=True, default=date.today())
+  readable_timestamp: int = Field(nullable=True, default=date.today())
   
   user: "User" = Relationship(back_populates='ratings')
   movie: "Movie" = Relationship(back_populates='ratings')

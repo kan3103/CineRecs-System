@@ -32,8 +32,8 @@ async def get_person(id: int, person_service: PersonService = Depends(get_person
   except HTTPException as e:
     raise e
 
-@router.delete('/{id}', response_model=PersonResponse, status_code=204)
-async def delete_person(id: int, person_service: PersonService = Depends(get_person_service)) -> PersonResponse:
+@router.delete('/{id}', response_model=None, status_code=204)
+async def delete_person(id: int, person_service: PersonService = Depends(get_person_service)) -> None:
   try:
     await person_service.delete_person(id)
   except HTTPException as e:

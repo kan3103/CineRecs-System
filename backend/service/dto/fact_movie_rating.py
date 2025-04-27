@@ -7,7 +7,7 @@ class FactMovieRatingCreate(BaseModel):
   movie_id: int
   rating: float
 
-class FactMovingRatingUpdate(BaseModel):
+class FactMovieRatingUpdate(BaseModel):
   rating: Optional[float]
   
 class FactMovieRatingResponse(BaseModel):
