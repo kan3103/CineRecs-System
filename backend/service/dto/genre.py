@@ -15,7 +15,7 @@ class GenreUpdate(BaseModel):
 class GenreResponse(BaseModel):
   id: int
   type: str
-  overall_rating: float
+  overall_rating: Optional[float]
   
   model_config = ConfigDict(from_attributes=True)
   

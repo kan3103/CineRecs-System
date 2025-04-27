@@ -2,7 +2,7 @@
 from datetime import date
 from sqlmodel import Field, Relationship, SQLModel, Column
 from sqlalchemy.dialects.postgresql import JSONB
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
   from model.fact_movie_rating import FactMovieRating

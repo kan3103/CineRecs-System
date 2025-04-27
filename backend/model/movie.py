@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional
 from model.movie_genre import MovieGenre
 
 if TYPE_CHECKING:
-  
   from model.credit import Credit
   from model.fact_movie_rating import FactMovieRating
   from model.genre import Genre
@@ -20,7 +19,7 @@ class Movie(SQLModel, table=True):
   rated: str = Field(nullable=False, min_length=1, max_length=15)
   total_rating: Optional[float] = Field(nullable=True, ge=0.0, le=10.0)
   rating_total_count: Optional[int] = Field(nullable=True, ge=0, default=0)
-  runtime: int = Field(nullable=False, min_length=1)
+  runtime: int = Field(nullable=False, ge=1)
   release_date: date = Field(nullable=False)
   budget: Optional[float] = Field(nullable=True, default=0.0, ge=0.0)
   revenue: int = Field(nullable=False, ge=1)

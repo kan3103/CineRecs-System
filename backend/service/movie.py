@@ -1,5 +1,6 @@
 
 import asyncio
+import math
 from fastapi import HTTPException
 from model.genre import Genre
 from config.db import get_session
@@ -7,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from model.movie import Movie
 from fastapi import Depends
-from service.dto.movie import MovieCreate, MovieUpdate
+from service.dto.movie import MovieCreate, MovieQuery, MovieUpdate
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy import true, func
+from sqlalchemy.orm import selectinload
 class MovieService:
   
   def __init__(self, db: AsyncSession):
@@ -65,5 +67,50 @@ class MovieService:
     await self.db.delete(movie)
     await self.db.commit()
     
+  async def get_movies(self, dto: MovieQuery, page: int, limit: int) -> tuple[list[Movie], int, int]:
+    
+    count_query = (
+      select(func.count()).where(Movie.rated.like(f"%{dto.rated}%") if dto.rated is not None else true())  # type: ignore
+        .where(func.lower(Movie.name).like(f"%{dto.name.lower()}%") if dto.name is not None else true())  # type: ignore
+        .where(Movie.total_rating >= dto.min_total_rating if dto.min_total_rating is not None else true())  # type: ignore
+        .where(Movie.total_rating <= dto.max_total_rating if dto.max_total_rating is not None else true()) # type: ignore
+        .where(Movie.runtime >= dto.min_runtime if dto.min_runtime is not None else true()) # type: ignore
+        .where(Movie.runtime <= dto.max_runtime if dto.max_runtime is not None else true()) # type: ignore
+        .where(Movie.release_date >= dto.from_release_date if dto.from_release_date is not None else true()) # type: ignore
+        .where(Movie.release_date <= dto.to_release_date if dto.to_release_date is not None else true()) # type: ignore
+        .where(Movie.revenue >= dto.min_revenue if dto.min_revenue is not None else true()) # type: ignore
+        .where(Movie.revenue <= dto.max_revenue if dto.max_revenue is not None else true()) # type: ignore
+        .where(func.lower(Movie.description).lower().like(f"%{dto.description.lower()}%") if dto.description is not None else true()) # type: ignore
+        .where(Movie.status == dto.status if dto.status is not None else true()) # type: ignore
+        .where(Movie.language.in_(dto.languages) if dto.languages is not None else true()) # type: ignore
+        .where(Movie.countries.in_(dto.countries) if dto.countries is not None else true()) # type: ignore 
+    )
+    total_items = (await self.db.execute(count_query)).scalar_one()
+    total_pages = math.ceil((float(total_items) / limit))
+    page_num = min(page, total_pages)
+    offset = (page_num - 1) * limit
+    
+    item_query = (
+      select(Movie).where(Movie.rated.like(f"%{dto.rated}%") if dto.rated is not None else true())  # type: ignore
+        .where(Movie.name.like(f"%{dto.name}%") if dto.name is not None else true())  # type: ignore
+        .where(Movie.total_rating >= dto.min_total_rating if dto.min_total_rating is not None else true())  # type: ignore
+        .where(Movie.total_rating <= dto.max_total_rating if dto.max_total_rating is not None else true()) # type: ignore
+        .where(Movie.runtime >= dto.min_runtime if dto.min_runtime is not None else true()) # type: ignore
+        .where(Movie.runtime <= dto.max_runtime if dto.max_runtime is not None else true()) # type: ignore
+        .where(Movie.release_date >= dto.from_release_date if dto.from_release_date is not None else true()) # type: ignore
+        .where(Movie.release_date <= dto.to_release_date if dto.to_release_date is not None else true()) # type: ignore
+        .where(Movie.revenue >= dto.min_revenue if dto.min_revenue is not None else true()) # type: ignore
+        .where(Movie.revenue <= dto.max_revenue if dto.max_revenue is not None else true()) # type: ignore
+        .where(Movie.description.like(f"%{dto.description}%") if dto.description is not None else true()) # type: ignore
+        .where(Movie.status == dto.status if dto.status is not None else true()) # type: ignore
+        .where(Movie.language.in_(dto.languages) if dto.languages is not None else true()) # type: ignore
+        .where(Movie.countries.in_(dto.countries) if dto.countries is not None else true()) # type: ignore 
+        .options(selectinload(Movie.genres)) # type: ignore
+    ).offset(offset).limit(limit)
+    movies = list( (await self.db.execute(item_query)).scalars().all() )
+    return movies, total_items, total_pages
+    
+      
+          
 async def get_movie_service(db: AsyncSession = Depends(get_session)) -> MovieService:
   return MovieService(db)
