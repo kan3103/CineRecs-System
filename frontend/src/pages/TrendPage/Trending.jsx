@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import login from "../../assets/images/login.png";
 import trend from "../../assets/images/Home/trend.png";
 import heart from "../../assets/images/Home/heart.png";
@@ -9,6 +10,15 @@ import logout from "../../assets/images/Home/logout.png";
 import ListTrendingFilm from "../TrendPage/components/ListFilm";
 
 export const Trending = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // Clear user data from localStorage
+        localStorage.removeItem('user');
+        // Redirect to login page
+        navigate('/');
+    };
+
     return (
         <div className="bg-white min-h-screen flex flex-col">
             <div className="grid grid-cols-[268px_1fr] h-screen overflow-hidden"
@@ -27,14 +37,18 @@ export const Trending = () => {
                         {[
                             { text: "Home", icon: film, path: "/home" },
                             { text: "Favourites", icon: heart },
-                            { text: "Trending", icon: trend, path: "/trending" },
-                            { text: "Settings", icon: settings },
-                            { text: "Log out", icon: logout },
+                            { text: "Recommended", icon: trend, path: "/trending" },
+                            { text: "Settings", icon: settings, path: "/profile" },
+                            { text: "Log out", icon: logout, onClick: handleLogout },
                         ].map((item, index) => (
                             <a
                                 key={index}
                                 href={item.path}
-                                className="flex items-center gap-3 text-base text-white font-normal hover:font-bold transition-all duration-200"
+                                onClick={item.onClick ? (e) => {
+                                    e.preventDefault();
+                                    item.onClick();
+                                } : undefined}
+                                className="flex items-center gap-3 text-base text-white font-normal hover:font-bold transition-all duration-200 cursor-pointer"
                             >
                                 <img className="w-6 h-6" alt={`${item.text} icon`} src={item.icon} />
                                 {item.text}

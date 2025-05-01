@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     if (isLoggedIn && allowedRoles.includes(userRole)) {
         return children;
     } else {
-        return <Navigate to="/login" />;
+        return <Navigate to="/" />;
     }
 };
 

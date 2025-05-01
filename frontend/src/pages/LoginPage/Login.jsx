@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion'; // Import Framer Motion để thêm animation
+import { motion } from 'framer-motion'; // Import Framer Motion for animations
 import login from "../../assets/images/login.png";
 import login1 from "../../assets/images/login1.png";
 import LoginForm from "../../components/LoginForm";
 
 export const Login = () => {
-    const [showLoginForm, setShowLoginForm] = React.useState(false);
+    const [showLoginForm, setShowLoginForm] = useState(false);
     const navigate = useNavigate();
+    
+    // Check if user is already logged in
+    useEffect(() => {
+        const user = localStorage.getItem('user');
+        if (user) {
+            navigate('/home');
+        }
+    }, [navigate]);
 
     return (
         <div className="flex justify-center items-center h-screen w-full relative">
@@ -39,7 +47,7 @@ export const Login = () => {
 
                 {/* Sign Up Link */}
                 <p className="mt-4 text-sm">
-                    No account? <span className="font-bold underline cursor-pointer">Sign up</span>
+                    No account? <span className="font-bold underline cursor-pointer" onClick={() => setShowLoginForm(true)}>Sign up</span>
                 </p>
             </div>
 
@@ -52,7 +60,15 @@ export const Login = () => {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-80 backdrop-blur-sm z-50"
                 >
-                    <LoginForm />
+                    <div className="relative">
+                        <LoginForm />
+                        <button 
+                            className="absolute top-2 right-2 text-white text-xl bg-transparent border-none cursor-pointer"
+                            onClick={() => setShowLoginForm(false)}
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </motion.div>
             )}
         </div>

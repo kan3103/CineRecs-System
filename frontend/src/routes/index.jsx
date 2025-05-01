@@ -1,13 +1,14 @@
 import Login from "../pages/LoginPage/Login.jsx"
 import HomePage from "../pages/Home/HomePage.jsx"
 import Trending from "../pages/TrendPage/Trending.jsx"
+import ProfilePage from "../pages/SettingPage/Profile.jsx"
 
 
 const routes = [
     {
         path: '/home',
         component: HomePage,
-        protected: false,
+        // protected: false,
     },
     {
         path: '/trending',
@@ -16,8 +17,8 @@ const routes = [
         // allowedRoles: ['admin'],
     },
     {
-        path: '/home-staff',
-        // component: HomeStaff,
+        path: '/favorites',
+        // component: Favourite,
         // protected: true,
         // allowedRoles: ['staff'],
     },
@@ -36,9 +37,9 @@ const routes = [
     },
     {
         path: '/profile',
-        // component: Profile,
-        protected: true,
-        allowedRoles: ['admin'],
+        component: ProfilePage,
+        // protected: true,
+        // allowedRoles: ['admin'],
     },
     {
         path: '/profile-staff',

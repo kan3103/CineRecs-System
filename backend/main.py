@@ -1,4 +1,3 @@
-
 import os
 import uvicorn
 from contextlib import asynccontextmanager
@@ -27,6 +26,15 @@ app = FastAPI(
   openapi_url=f"{API_PATH}/openapi.json",
   generate_unique_id_function=custom_generate_unique_id,
   lifespan=lifespan
+)
+
+# Add CORS middleware to allow cross-origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Assuming your React app runs on port 3000
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix=API_PATH)

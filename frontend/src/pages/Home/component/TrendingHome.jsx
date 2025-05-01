@@ -35,7 +35,7 @@ const trendingMovies = [
 const Trending = () => {
     return (
         <div className="px-6 py-4">
-            <h2 className="text-xl font-bold mb-4 text-white">Trending</h2>
+            <h2 className="text-xl font-bold mb-4 text-white">Recommended for you</h2>
             <div className="flex flex-wrap gap-10">
                 {trendingMovies.map((movie, index) => (
                     <MovieCard

@@ -29,4 +29,15 @@ class UserResponse(BaseModel):
   created_at: date
   
   model_config = ConfigDict(from_attributes=True)
+
+class UserLogin(BaseModel):
+  username: str
+  password: str
+
+class LoginResponse(BaseModel):
+  id: int
+  name: str
+  username: str
+  token: str
   
+  model_config = ConfigDict(from_attributes=True)

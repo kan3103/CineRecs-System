@@ -1,8 +1,8 @@
-
 from datetime import date
 from sqlmodel import Field, Relationship, SQLModel, Column
 from sqlalchemy.dialects.postgresql import JSONB
 from typing import TYPE_CHECKING
+from sqlalchemy import Identity
 
 if TYPE_CHECKING:
   from model.fact_movie_rating import FactMovieRating
@@ -13,7 +13,7 @@ class User(SQLModel, table=True):
   
   __tablename__ = "dim_user" # type: ignore
   
-  id: int = Field(default=None, primary_key=True)
+  id: int = Field(default=None, primary_key=True, sa_column_kwargs={"autoincrement": True})
   name: str = Field(nullable=False, min_length=1, max_length=255)
   date_of_birth: date = Field(nullable=False)
   username: str = Field(nullable=False, min_length=1, max_length=255)
