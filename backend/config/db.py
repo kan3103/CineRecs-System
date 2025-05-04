@@ -8,11 +8,11 @@ import os
 
 
 
-POSTGRES_USER = os.getenv("POSTGRES_USER", "khoango")
-POSTGRES_PASSWORD = quote_plus(os.getenv("POSTGRES_PASSWORD", "Labr@DoR42#32$"))
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "cinema")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "avnadmin")
+POSTGRES_PASSWORD = quote_plus(os.getenv("POSTGRES_PASSWORD", "AVNS_4QIAupJ-5VLHdr7KGKM"))
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "btl-data-mining-btl-data-mining.f.aivencloud.com")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "18362")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "defaultdb")
 
 DATABASE_URL = (
   f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"

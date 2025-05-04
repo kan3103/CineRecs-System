@@ -11,10 +11,10 @@ class Credit(SQLModel, table=True):
   
   __tablename__ = 'dim_credits' # type: ignore
   
-  id: int = Field(primary_key=True, default=None)
-  movie_id: int = Field(nullable=False, foreign_key="dim_movie.id")
-  person_id: int = Field(nullable=False, foreign_key='dim_person.id')
-  job: str = Field(nullable=False, min_length=1, max_length=255)
+  movie_id: int = Field(nullable=False, foreign_key="dim_movie.id", primary_key=True)
+  person_id: int = Field(nullable=False, foreign_key='dim_person.id', primary_key=True)
+  role: str = Field(nullable=False, max_length=255)
+  job: str = Field(nullable=False)
   
   person: "Person" = Relationship(back_populates='credits')
   movie: "Movie" = Relationship(back_populates='credits')

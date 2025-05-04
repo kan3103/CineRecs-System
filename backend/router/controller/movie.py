@@ -1,13 +1,9 @@
 
 
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, Dict, Any
-from service.dto.genre import GenreResponse
-from model.movie import Movie
+from typing import Dict, Any
 from service.dto.movie import MovieCreate, MovieQuery, MovieResponse, MovieUpdate
 from service.movie import MovieService, get_movie_service
-
-
 
 router = APIRouter(tags=["movies"], prefix="/movies")
 

@@ -14,8 +14,8 @@ class Person(SQLModel, table=True):
   id: int = Field(nullable=False, primary_key=True)
   name: str = Field(nullable=False, min_length=1, max_length=255)
   stage_name: Optional[str] = Field(nullable=True, min_length=1, max_length=255)
-  profile: Optional[str] = Field(nullable=True, min_length=1, max_length=1022, default='')
-  gender: int = Field(nullable=False, ge=1, le=2)
+  profile: Optional[str] = Field(nullable=True, default='')
+  gender: int = Field(nullable=False, ge=0, le=3)
   known_for_dept: Optional[str] = Field(nullable=True, min_length=1, max_length=255)
   
   credits: list["Credit"] = Relationship(back_populates='person')
