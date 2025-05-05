@@ -1,4 +1,5 @@
 
+import datetime
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
@@ -11,9 +12,10 @@ class FactMovieRatingUpdate(BaseModel):
   rating: Optional[float]
   
 class FactMovieRatingResponse(BaseModel):
-  id: int
   user_id: int
   movie_id: int
   rating: float
+  timestamp: int
+  date: datetime.date
   
   model_config = ConfigDict(from_attributes=True)

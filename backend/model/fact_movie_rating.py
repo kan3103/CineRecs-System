@@ -12,12 +12,10 @@ class FactMovieRating(SQLModel, table=True):
   
   __tablename__ = 'fact_movie_rating' # type: ignore
   
-  id: int = Field(primary_key=True, default=None)
-  user_id: int = Field(nullable=False, foreign_key="dim_user.id")
-  movie_id: int = Field(nullable=False, foreign_key="dim_movie.id")
-  rating: float = Field(nullable=False, ge=0.0, le=10.0)
+  user_id: int = Field(nullable=False, foreign_key="dim_user.id", primary_key=True)
+  movie_id: int = Field(nullable=False, foreign_key="dim_movie.id", primary_key=True)
+  rating: float = Field(nullable=False, ge=0.0, le=5.0)
   timestamp: int = Field(nullable=True, default=date.today())
-  readable_timestamp: int = Field(nullable=True, default=date.today())
   
   user: "User" = Relationship(back_populates='ratings')
   movie: "Movie" = Relationship(back_populates='ratings')

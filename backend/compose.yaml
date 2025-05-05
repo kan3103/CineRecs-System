@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16.8-alpine3.20
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: khoango
+      POSTGRES_PASSWORD: 'Labr@DoR42#32$'
+      POSTGRES_DB: cinema
+    restart: unless-stopped
+    ports:
+      - "5432:5432/tcp"
+    networks:
+      - postgresql-network
+    volumes:
+      - ./data:/var/lib/postgresql/data
+networks:
+  postgresql-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: 127.0.0.1
