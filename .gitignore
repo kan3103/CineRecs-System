@@ -1,8 +1,1 @@
-.venv
-node_modules
-pnpm-lock.yaml
-output.json
-teting.ipynb
-database/*.csv
-__pycache__
-*.pyc
+.env
