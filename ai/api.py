@@ -1,5 +1,6 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sklearn.model_selection import train_test_split
+from sqlalchemy import create_engine ,text
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
@@ -16,8 +17,8 @@ X_country_shape = 0
 X_name_shape = 0
 
 # Kiểm tra xem tệp JSON đã tồn tại chưa
-if os.path.exists('data.json'):
-    with open('data.json', 'r') as f:
+if os.path.exists('metadata/data.json'):
+    with open('metadata/data.json', 'r') as f:
                 temp_data = json.load(f)
     X_genre_shape = temp_data['X_genre'] 
     X_year_shape = temp_data['X_year'] 
@@ -39,6 +40,8 @@ class API:
         dotenv.load_dotenv()
         self.db_url = os.getenv("DATABASE_URL")
         self.engine = create_engine(self.db_url)
+        if not os.path.exists('models/knn_model.pkl'):
+            self.create_movies_matrix()
 
 
     
@@ -123,7 +126,7 @@ class API:
         X_country = vectorizer3.fit_transform(train['country']).toarray()
         X_name = vectorizer4.fit_transform(train['movie_name']).toarray()
         X_roles = vectorizer5.fit_transform(train['roles']).toarray()
-        X = np.concatenate([movie_id,X_genre, X_year, X_country, X_name, X_roles], axis=1)
+        self.X = np.concatenate([movie_id,X_genre, X_year, X_country, X_name, X_roles], axis=1)
         
         X_genre_shape = X_genre.shape[1]
         X_year_shape = X_year.shape[1]
@@ -131,7 +134,7 @@ class API:
         X_name_shape = X_name.shape[1]
 
         
-        with open('data.json', 'w') as f:
+        with open('metadata/data.json', 'w') as f:
             data = {
                 'X_genre': X_genre_shape,
                 'X_year': X_year_shape,
@@ -139,10 +142,10 @@ class API:
                 'X_name': X_name_shape
             }
             json.dump(data, f)
-        x_train = X[:, 1:]
+        x_train = self.X[:, 1:]
         knn = NearestNeighbors(n_neighbors=250, metric=DistanceMetric.get_metric('pyfunc', func=custom_distance))
         knn.fit(x_train)
-        joblib.dump(knn, 'knn_model.pkl')
+        joblib.dump(knn, 'models/knn_model.pkl')
         
     def get_user_recommendations(self,user_id,n_recommendations=10):
         query = """
@@ -179,8 +182,7 @@ class API:
         movies_user = movies_user.split(',')
         
 
-        print(X_genre_shape, X_year_shape, X_country_shape, X_name_shape)
-        knn = joblib.load('knn_model.pkl')
+        knn = joblib.load('models/knn_model.pkl')
         distances, indices = knn.kneighbors(embedding)
         id_movies = []
         for i in range(len(indices[0])):
@@ -194,6 +196,66 @@ class API:
                 break
                 
         return id_movies[:n_recommendations]
+    
+    
+    def update_embedding(self, user_id):
+        query = f"""
+            SELECT 
+                du.id AS user_id,
+                du.name AS user_name,
+                fmr.rating AS rating,
+                fmr.movie_id AS movie_id,
+                fmr.timestamp AS timestamp
+
+            FROM dim_user du
+            JOIN fact_movie_rating fmr ON du.id = fmr.user_id
+            wHERE du.id = {user_id}
+        """
+
+        users = pd.read_sql(query, self.engine)
+
+
+        train, test = train_test_split(users, test_size=0.2, random_state=40)
+
+        movie_user_train = np.zeros((len(train), self.X[:,1:].shape[1]))
+        for i in range(len(train)):
+            movie_id = train["movie_id"].iloc[i]
+            indices = np.where(self.X[:, 0] == movie_id)[0]
+            if len(indices) > 0:
+                movie_user_train[i, :] = self.X[indices[0], 1:]
+            else:
+                movie_user_train[i, :] = np.zeros(self.X[:, 1:].shape[1])
+            
+
+        year_rating = train["timestamp"].values
+        latest_time = np.max(year_rating)
+        # Tính độ lệch thời gian
+        time_deltas = latest_time - year_rating  # càng cũ thì càng lớn
+
+        # Chuyển đổi độ lệch thời gian thành trọng số (càng cũ thì càng nhỏ)
+        alpha = 1e-8
+        year_rating = 1 / (1 + alpha * time_deltas)
+
+        user_rating = train["rating"].values
+        user_rating = list(map(lambda x: x-2.9, user_rating))
+        user_rating = user_rating*year_rating
+
+
+
+        result = np.dot(user_rating,movie_user_train)
+        result = (result - np.min(result)) / (np.max(result) - np.min(result))
+    
+        result_list = result.tolist()
+        result_json = json.dumps(result_list)
+        query = text("""
+            UPDATE dim_user
+            SET embedding = :recs
+            WHERE id = :uid
+        """)
+
+        with self.engine.connect() as conn:
+            conn.execute(query, {"recs": result_json, "uid": x})
+            conn.commit()
     
     
         
