@@ -254,7 +254,7 @@ class API:
         """)
 
         with self.engine.connect() as conn:
-            conn.execute(query, {"recs": result_json, "uid": x})
+            conn.execute(query, {"recs": result_json, "uid": user_id})
             conn.commit()
     
     
