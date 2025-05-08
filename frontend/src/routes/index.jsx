@@ -2,6 +2,7 @@ import Login from "../pages/LoginPage/Login.jsx"
 import HomePage from "../pages/Home/HomePage.jsx"
 import Trending from "../pages/TrendPage/Trending.jsx"
 import ProfilePage from "../pages/SettingPage/Profile.jsx"
+import Favorite from "../pages/FavorPage/Favourite.jsx"
 
 
 const routes = [
@@ -18,7 +19,7 @@ const routes = [
     },
     {
         path: '/favorites',
-        // component: Favourite,
+        component: Favorite,
         // protected: true,
         // allowedRoles: ['staff'],
     },

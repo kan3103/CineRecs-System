@@ -1,12 +1,13 @@
-
 import datetime
-from pydantic import BaseModel, ConfigDict
+import time
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 class FactMovieRatingCreate(BaseModel):
   user_id: int
   movie_id: int
   rating: float
+  timestamp: Optional[int] = Field(default_factory=lambda: int(time.time()))
 
 class FactMovieRatingUpdate(BaseModel):
   rating: Optional[float]

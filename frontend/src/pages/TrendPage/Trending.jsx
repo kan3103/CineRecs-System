@@ -36,7 +36,7 @@ export const Trending = () => {
                     <nav className="flex flex-col gap-10">
                         {[
                             { text: "Home", icon: film, path: "/home" },
-                            { text: "Favourites", icon: heart },
+                            { text: "Favourites", icon: heart, path: "/favorites" },
                             { text: "Recommended", icon: trend, path: "/trending" },
                             { text: "Settings", icon: settings, path: "/profile" },
                             { text: "Log out", icon: logout, onClick: handleLogout },

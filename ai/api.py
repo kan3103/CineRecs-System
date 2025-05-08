@@ -36,13 +36,22 @@ def custom_distance(vec1, vec2):
 class API:
 
     def __init__(self):
-        
+        # Load environment variables
         dotenv.load_dotenv()
+        
+        # Get the database URL from environment variables or use a default value
         self.db_url = os.getenv("DATABASE_URL")
+
+        
+        # If the database URL is None or empty, use a default connection string
+        if not self.db_url:
+            # Default PostgreSQL connection string (modify this to match your database)
+            self.db_url = "postgresql+asyncpg://avnadmin:AVNS_4QIAupJ-5VLHdr7KGKM@btl-data-mining-btl-data-mining.f.aivencloud.com:18362/defaultdb"
+            print(f"WARNING: DATABASE_URL environment variable not set. Using default: {self.db_url}")
+        
         self.engine = create_engine(self.db_url)
         if not os.path.exists('models/knn_model.pkl'):
             self.create_movies_matrix()
-
 
     
     def create_movies_matrix(self):
@@ -147,57 +156,71 @@ class API:
         knn.fit(x_train)
         joblib.dump(knn, 'models/knn_model.pkl')
         
-    def get_user_recommendations(self,user_id,n_recommendations=10):
-        query = """
-        SELECT 
-            dm.id AS movie_id,
-            dm.name AS movie_name
-        FROM 
-            dim_movie dm
-        ORDER BY 
-            dm.id;
-
+    def get_user_recommendations(self, user_id, n_recommendations=10):
         """
-
-        movies = pd.read_sql(query, self.engine)
-        movies_id = movies['movie_id'].values.astype(int)
-
-        query2= f"""
+        Get personalized movie recommendations for a user based on their liked movies.
+        If the user hasn't liked any movies, returns an empty list.
+        """
+        # Check if the user has any liked movies
+        if not self.has_liked_movies(user_id):
+            print(f"User {user_id} has no liked movies, returning empty list")
+            return []
+            
+        # Otherwise, get personalized recommendations
+        try:
+            query = """
             SELECT 
-                du.id AS user_id,
-                du.name AS user_name,
-                du.embedding AS user_embedding,
-                STRING_AGG(fmr.movie_id::text, ',') AS movie_ids
-            FROM dim_user du
-            JOIN fact_movie_rating fmr ON du.id = fmr.user_id
-            WHERE du.id = {user_id}
-            GROUP BY du.id
+                dm.id AS movie_id,
+                dm.name AS movie_name
+            FROM 
+                dim_movie dm
+            ORDER BY 
+                dm.id;
+            """
 
-        """
-        userss = pd.read_sql(query2, self.engine)
-        embedding_str = userss['user_embedding'].values[0]
-        embedding = np.array(embedding_str).reshape(1, -1)  
+            movies = pd.read_sql(query, self.engine)
+            movies_id = movies['movie_id'].values.astype(int)
 
-        movies_user = userss['movie_ids'].values[0]
-        movies_user = movies_user.split(',')
-        
+            query2= f"""
+                SELECT 
+                    du.id AS user_id,
+                    du.name AS user_name,
+                    du.embedding AS user_embedding,
+                    STRING_AGG(fmr.movie_id::text, ',') AS movie_ids
+                FROM dim_user du
+                JOIN fact_movie_rating fmr ON du.id = fmr.user_id
+                WHERE du.id = {user_id}
+                GROUP BY du.id
+            """
+            
+            userss = pd.read_sql(query2, self.engine)
+            embedding_str = userss['user_embedding'].values[0]
+            embedding = np.array(embedding_str).reshape(1, -1)  
 
-        knn = joblib.load('models/knn_model.pkl')
-        distances, indices = knn.kneighbors(embedding)
-        id_movies = []
-        for i in range(len(indices[0])):
-            index = indices[0][i]
-            movie_id = movies_id[index]
-            if movie_id in movies_user:
-                continue
-            else:
-                id_movies.append(int(movie_id))
-            if len(id_movies) >= n_recommendations:
-                break
-                
-        return id_movies[:n_recommendations]
-    
-    
+            movies_user = userss['movie_ids'].values[0]
+            movies_user = movies_user.split(',')
+            
+
+            print(X_genre_shape, X_year_shape, X_country_shape, X_name_shape)
+            knn = joblib.load('models/knn_model.pkl')
+            distances, indices = knn.kneighbors(embedding)
+            id_movies = []
+            for i in range(len(indices[0])):
+                index = indices[0][i]
+                movie_id = movies_id[index]
+                if str(movie_id) in movies_user:
+                    continue
+                else:
+                    id_movies.append(int(movie_id))
+                if len(id_movies) >= n_recommendations:
+                    break
+                    
+            return id_movies[:n_recommendations]
+            
+        except Exception as e:
+            print(f"Error in get_user_recommendations: {e}")
+            return []
+
     def update_embedding(self, user_id):
         query = f"""
             SELECT 
@@ -256,6 +279,139 @@ class API:
         with self.engine.connect() as conn:
             conn.execute(query, {"recs": result_json, "uid": user_id})
             conn.commit()
-    
-    
+
+    def get_top_rated_movies(self, count=10):
+        """
+        Get the highest rated movies from the database.
+        Used for new users or for the initial homepage recommendations.
+        """
+        query = """
+            SELECT 
+                dm.id AS movie_id
+            FROM 
+                dim_movie dm
+            WHERE
+                dm.rating IS NOT NULL
+            ORDER BY 
+                dm.rating DESC, dm.rating_total_count DESC
+            LIMIT :count
+        """
         
+        try:
+            with self.engine.connect() as connection:
+                result = connection.execute(text(query), {"count": count})
+                movie_ids = [row[0] for row in result]
+                return movie_ids
+        except Exception as e:
+            print(f"Error getting top rated movies: {e}")
+            return []
+
+    def update_user_embedding(self, user_id):
+        """
+        Update the user embedding after they like a movie.
+        This will recalculate the user's embedding based on their liked movies.
+        """
+        # Fetch all the user's liked movies
+        query = f"""
+            SELECT 
+                fmr.user_id,
+                STRING_AGG(fmr.movie_id::text, ',') AS movie_ids
+            FROM 
+                fact_movie_rating fmr
+            WHERE 
+                fmr.user_id = {user_id}
+            GROUP BY 
+                fmr.user_id
+        """
+        
+        # Get user's liked movies
+        try:
+            user_movies_df = pd.read_sql(query, self.engine)
+            
+            if user_movies_df.empty:
+                print(f"No liked movies found for user {user_id}")
+                return False
+            
+            # Get movie IDs liked by the user
+            movie_ids = user_movies_df['movie_ids'].values[0].split(',')
+            movie_ids = [int(mid) for mid in movie_ids]
+            
+            # Fetch feature vectors for these movies
+            # First, we need all movies to get the indices in our model
+            all_movies_query = """
+                SELECT 
+                    dm.id AS movie_id,
+                    dm.name AS movie_name
+                FROM 
+                    dim_movie dm
+                ORDER BY 
+                    dm.id
+            """
+            all_movies = pd.read_sql(all_movies_query, self.engine)
+            all_movie_ids = all_movies['movie_id'].values.astype(int)
+            
+            # Get the matrix we saved earlier
+            try:
+                # Ensure we have the latest model
+                self.create_movies_matrix()
+                knn = joblib.load('models/knn_model.pkl')
+                
+                # Create a new embedding for the user based on their liked movies
+                # First find the indices of the user's liked movies in our dataset
+                movie_indices = []
+                for mid in movie_ids:
+                    indices = np.where(all_movie_ids == mid)[0]
+                    if len(indices) > 0:
+                        movie_indices.append(indices[0])
+                
+                if not movie_indices:
+                    print(f"None of user {user_id}'s liked movies are in our dataset")
+                    return False
+                
+                # Get the feature vectors for these movies and create user embedding
+                # We're taking the average embedding of all the movies they liked
+                user_embedding = np.mean([knn._fit_X[idx] for idx in movie_indices], axis=0)
+                
+                # Update the user's embedding in the database
+                update_query = f"""
+                    UPDATE dim_user
+                    SET embedding = ARRAY{user_embedding.tolist()}::float[]
+                    WHERE id = {user_id}
+                """
+                
+                with self.engine.connect() as connection:
+                    connection.execute(text(update_query))
+                    connection.commit()
+                    
+                print(f"Successfully updated embedding for user {user_id}")
+                return True
+                
+            except Exception as e:
+                print(f"Error updating user embedding: {e}")
+                return False
+                
+        except Exception as e:
+            print(f"Error in update_user_embedding: {e}")
+            return False
+
+    def has_liked_movies(self, user_id):
+        """
+        Check if a user has liked any movies.
+        Returns True if the user has liked at least one movie, False otherwise.
+        """
+        query = f"""
+            SELECT COUNT(*) as like_count
+            FROM fact_movie_rating
+            WHERE user_id = {user_id}
+        """
+        
+        try:
+            like_count_df = pd.read_sql(query, self.engine)
+            like_count = like_count_df['like_count'].values[0]
+            return like_count > 0
+        except Exception as e:
+            print(f"Error checking if user has liked movies: {e}")
+            return False
+
+
+

@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+import time
 
 from model.movie import Movie
 from model.user import User
@@ -23,13 +24,19 @@ class FactMovieRatingService:
     movie = (await self.db.execute(select(Movie).where(Movie.id == dto.movie_id))).scalars().first() # type: ignore
     if movie is None:
       raise HTTPException(status_code=404, detail="Movie is not found")
-    rating = FactMovieRating(**dto.model_dump())
+      
+    # Ensure we have an integer timestamp
+    data = dto.model_dump()
+    if 'timestamp' not in data or data['timestamp'] is None:
+      data['timestamp'] = int(time.time())
+      
+    rating = FactMovieRating(**data)
     rating.user = user
     rating.movie = movie
-    self.db.add(movie)
+    self.db.add(rating)
     try:
       await self.db.commit()
-      await self.db.refresh(movie)
+      await self.db.refresh(rating)
     except:
       await self.db.rollback()
       raise
@@ -65,4 +72,4 @@ class FactMovieRatingService:
     return rating
     
 async def get_fact_movie_rating_service(db: AsyncSession = Depends(get_session)) -> FactMovieRatingService:
-  return FactMovieRatingService(db) 
+  return FactMovieRatingService(db)

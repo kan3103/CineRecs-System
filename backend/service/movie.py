@@ -1,4 +1,3 @@
-
 import asyncio
 import math
 from fastapi import HTTPException
@@ -12,6 +11,7 @@ from service.dto.movie import MovieCreate, MovieQuery, MovieUpdate
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import true, func
 from sqlalchemy.orm import selectinload
+from sqlalchemy import text
 class MovieService:
   
   def __init__(self, db: AsyncSession):
@@ -110,6 +110,58 @@ class MovieService:
     movies = list( (await self.db.execute(item_query)).scalars().all() )
     return movies, total_items, total_pages
     
+  async def get_movies_with_details(self, movie_ids: list[int]) -> list[dict]:
+    """
+    Get details for multiple movies including accurate genre information
+    using the raw SQL query with the genre_agg join
+    """
+    if not movie_ids:
+      return []
+      
+    try:
+      # Use ORM approach instead of raw SQL to avoid greenlet issues
+      query = (
+        select(Movie)
+        .where(Movie.id.in_(movie_ids))
+        .options(selectinload(Movie.genres))
+      )
+      
+      result = await self.db.execute(query)
+      movies = result.scalars().all()
+      
+      movies_list = []
+      for movie in movies:
+        # Format movie data for response
+        genres_list = [genre.type for genre in movie.genres] if movie.genres else []
+        
+        movies_list.append({
+          "id": movie.id,
+          "title": movie.name,
+          "release_date": str(movie.release_date) if movie.release_date else None,
+          "poster_url": movie.poster,
+          "genres": genres_list,
+          "description": movie.description,
+          "roles": []  # This would require a separate query for roles
+        })
+      
+      # Add placeholders for movies not found
+      found_ids = {movie.id for movie in movies}
+      for movie_id in movie_ids:
+        if movie_id not in found_ids:
+          movies_list.append({
+            "id": movie_id,
+            "title": f"Movie {movie_id}",
+            "release_date": None,
+            "poster_url": None,
+            "genres": [],
+            "description": None,
+            "roles": []
+          })
+      
+      return movies_list
+    except Exception as e:
+      print(f"Error in get_movies_with_details: {str(e)}")
+      raise HTTPException(status_code=500, detail=f"Error fetching movies: {str(e)}")
       
           
 async def get_movie_service(db: AsyncSession = Depends(get_session)) -> MovieService:
